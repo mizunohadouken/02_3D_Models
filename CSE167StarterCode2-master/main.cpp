@@ -2,6 +2,15 @@
 
 GLFWwindow* window;
 
+void printGLError(const char* msg)
+{
+	const GLenum err = glGetError();
+	if (err != GL_NO_ERROR)
+	{
+		const char* str = (const char*)gluErrorString(err); std::cerr << "OpenGL error : " << msg << ", " << str << std::endl;
+	}
+}
+
 void error_callback(int error, const char* description)
 {
 	// Print error
@@ -84,6 +93,7 @@ int main(void)
 		Window::display_callback(window);
 		// Idle callback. Updating objects, etc. can be done here.
 		Window::idle_callback();
+
 	}
 
 	Window::clean_up();

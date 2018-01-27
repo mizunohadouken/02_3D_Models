@@ -1,7 +1,10 @@
 #include "window.h"
 
 const char* window_title = "GLFW Starter Project";
-Cube * cube;
+// TODO remove cube
+//Cube * cube;
+OBJObject* obj_bunny;// = OBJObject("objs\\bunny.obj");
+
 GLint shaderProgram;
 
 // On some systems you need to change this to the absolute path
@@ -19,9 +22,11 @@ int Window::height;
 glm::mat4 Window::P;
 glm::mat4 Window::V;
 
+
 void Window::initialize_objects()
 {
-	cube = new Cube();
+//	cube = new Cube();
+	obj_bunny = new OBJObject("objs\\bunny.obj");
 
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
@@ -30,7 +35,10 @@ void Window::initialize_objects()
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
-	delete(cube);
+	// TODO remove cube
+//	delete(cube);
+	// TODO delete all objs
+	delete(obj_bunny);
 	glDeleteProgram(shaderProgram);
 }
 
@@ -101,7 +109,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 void Window::idle_callback()
 {
 	// Call the update function the cube
-	cube->update();
+//	cube->update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -112,8 +120,12 @@ void Window::display_callback(GLFWwindow* window)
 	// Use the shader of programID
 	glUseProgram(shaderProgram);
 	
+	// TODO remove cube
 	// Render the cube
-	cube->draw(shaderProgram);
+//	cube->draw(shaderProgram);
+
+	// TODO render objs
+	obj_bunny->draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
