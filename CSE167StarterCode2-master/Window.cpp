@@ -1,4 +1,13 @@
+#define RENDERALL 0
+
 #include "window.h"
+
+#include <vector>
+#include <memory>
+
+int object_number = 0;
+std::vector<std::unique_ptr<OBJObject>> v_objects_to_render;
+
 
 const char* window_title = "GLFW Starter Project";
 // TODO remove cube
@@ -26,7 +35,13 @@ glm::mat4 Window::V;
 void Window::initialize_objects()
 {
 //	cube = new Cube();
-	obj_bunny = new OBJObject("objs\\bunny.obj");
+
+	v_objects_to_render.push_back(std::unique_ptr<OBJObject> (new OBJObject("objs\\bunny.obj")));
+#if RENDERALL
+	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\bear.obj")));
+	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\dragon.obj")));
+#endif
+//	obj_bunny = new OBJObject("objs\\bunny.obj");
 
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
@@ -125,7 +140,8 @@ void Window::display_callback(GLFWwindow* window)
 //	cube->draw(shaderProgram);
 
 	// TODO render objs
-	obj_bunny->draw(shaderProgram);
+//	obj_bunny->draw(shaderProgram);
+	v_objects_to_render[object_number]->draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -144,5 +160,11 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
+
+		// press F1, F2, & F3 to display/render different OBJs
+		else if (key == GLFW_KEY_F1) { object_number = 0; }
+		else if (key == GLFW_KEY_F2) { object_number = 1; }
+		else if (key == GLFW_KEY_F3) { object_number = 2; }
+
 	}
 }
