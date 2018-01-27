@@ -17,6 +17,7 @@ void error_callback(int error, const char* description)
 	fputs(description, stderr);
 }
 
+
 void setup_callbacks()
 {
 	// Set the error callback
@@ -25,6 +26,12 @@ void setup_callbacks()
 	glfwSetKeyCallback(window, Window::key_callback);
 	// Set the window resize callback
 	glfwSetFramebufferSizeCallback(window, Window::resize_callback);
+
+	// mouse button and position callbacks
+	glfwSetCursorPosCallback(window, Window::cursor_position_callback);
+	glfwSetMouseButtonCallback(window, Window::mouse_button_callback);
+	glfwSetScrollCallback(window, Window::scroll_callback);
+	
 }
 
 void setup_glew()

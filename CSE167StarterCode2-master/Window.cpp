@@ -14,6 +14,11 @@ const char* window_title = "GLFW Starter Project";
 //Cube * cube;
 OBJObject* obj_bunny;// = OBJObject("objs\\bunny.obj");
 
+double Window::x_old;
+double Window::y_old;
+///////////////////
+///////////////////
+
 GLint shaderProgram;
 
 // On some systems you need to change this to the absolute path
@@ -27,6 +32,7 @@ glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
 int Window::width;
 int Window::height;
+
 
 glm::mat4 Window::P;
 glm::mat4 Window::V;
@@ -165,6 +171,117 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		else if (key == GLFW_KEY_F1) { object_number = 0; }
 		else if (key == GLFW_KEY_F2) { object_number = 1; }
 		else if (key == GLFW_KEY_F3) { object_number = 2; }
+		
+		// translate along x axis
+		else if (key == GLFW_KEY_X)
+		{
+			if (mods == GLFW_MOD_SHIFT) { v_objects_to_render[object_number]->translation(glm::vec3(.5f, 0.f, 0.f)); }
+			else { v_objects_to_render[object_number]->translation(glm::vec3(-.5f, 0.f, 0.f)); }
+		}
 
+		// translate along y axis
+		if (key == GLFW_KEY_Y)
+		{
+			if (mods == GLFW_MOD_SHIFT) { v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.5f, 0.f)); }
+			else { v_objects_to_render[object_number]->translation(glm::vec3(0.f, -.5f, 0.f)); }
+		}
+
+		// translate along z axis
+		else if (key == GLFW_KEY_Z)
+		{
+			if (mods == GLFW_MOD_SHIFT) { v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.f, -1.f)); }
+			else { v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.f, 1.f)); }
+		}
+
+		// scale object
+		else if (key == GLFW_KEY_S)
+		{
+			if (mods == GLFW_MOD_SHIFT) { v_objects_to_render[object_number]->scale(1.5f); }
+			else { v_objects_to_render[object_number]->scale(.5f); }
+		}
+
+		// orbit object about the z axis
+		else if (key == GLFW_KEY_O)
+		{
+			if (mods == GLFW_MOD_SHIFT) { v_objects_to_render[object_number]->orbit(10.f, glm::vec3(0.f, 0.f, 1.f)); }
+			else { v_objects_to_render[object_number]->orbit(10.f, glm::vec3(0.f, 0.f, -1.f)); }
+		}
+
+		// reset position or orientation/scale
+		else if (key == GLFW_KEY_R)
+		{
+			// upper case R resets scale and orientation
+			if (mods == GLFW_MOD_SHIFT) { v_objects_to_render[object_number]->reset_orientation_scale(); }
+			// lower case r resets position
+			else { v_objects_to_render[object_number]->reset_position(); }
+		}
 	}
 }
+
+///////////////////////////////
+//  additions for mouse actions
+void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+//	double xpos, ypos;
+/*	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+
+
+	if (state == GLFW_PRESS)
+	{
+		printf("right click\n");
+
+		glfwGetCursorPos(window, &xpos, &ypos);
+		printf("x: %f y: %f\n", xpos, ypos);
+	}
+	else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		printf("left click\n");
+	}*/
+}
+
+
+
+void Window::cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
+{
+	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+	glm::vec3 vec_pos = Window::trackBallMapping(xpos, ypos);
+	float sensitivity_factor = .05f;
+
+	if (state == GLFW_PRESS)
+	{
+		printf("right click\n");
+		v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f));
+//		v_objects_to_render[object_number]->translation(glm::vec3(vec_pos.x, -vec_pos.y, 0.f));
+
+	//	glfwGetCursorPos(window, &xpos, &ypos);
+	//	printf("x: %f y: %f\n", xpos, ypos);
+	}
+
+	x_old = xpos;
+	y_old = ypos;
+
+}
+
+void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	// translate along z axis when using mouse scroll
+	v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.f, yoffset));
+}
+
+glm::vec3 Window::trackBallMapping(double &x_cursor, double &y_cursor)
+{
+	glm::vec3 v;
+	float d;
+
+	v.x = (2.f * x_cursor - width) / width;
+	v.y = (height - 2.f * y_cursor) / height;
+	d = v.length();
+	d = (d < 1.f) ? d : 1.f;
+	v.z = sqrtf(1.00f - d * d);
+	v = glm::normalize(v);
+	return v;
+}
+
+
+//////////////
+//////////////
