@@ -1,4 +1,4 @@
-#define RENDERALL 0
+#define RENDERALL 1
 
 #include "window.h"
 
@@ -12,7 +12,7 @@ std::vector<std::unique_ptr<OBJObject>> v_objects_to_render;
 const char* window_title = "GLFW Starter Project";
 // TODO remove cube
 //Cube * cube;
-OBJObject* obj_bunny;// = OBJObject("objs\\bunny.obj");
+//OBJObject* obj_bunny;// = OBJObject("objs\\bunny.obj");
 
 double Window::x_old;
 double Window::y_old;
@@ -59,7 +59,8 @@ void Window::clean_up()
 	// TODO remove cube
 //	delete(cube);
 	// TODO delete all objs
-	delete(obj_bunny);
+//	delete(obj_bunny);
+
 	glDeleteProgram(shaderProgram);
 }
 
@@ -239,15 +240,20 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
 	}*/
 }
 
+void printvec3(glm::vec3 vPrintMe)
+{
+	printf("Vector x: %f\n", vPrintMe.x);
+	printf("Vector y: %f\n", vPrintMe.y);
+	printf("Vector z: %f\n", vPrintMe.z);
 
+}
 
 void Window::cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
 {
-	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-	glm::vec3 vec_pos = Window::trackBallMapping(xpos, ypos);
 	float sensitivity_factor = .05f;
 
-	if (state == GLFW_PRESS)
+	int right_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+	if (right_click_state == GLFW_PRESS)
 	{
 		printf("right click\n");
 		v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f));
@@ -255,6 +261,22 @@ void Window::cursor_position_callback(GLFWwindow * window, double xpos, double y
 
 	//	glfwGetCursorPos(window, &xpos, &ypos);
 	//	printf("x: %f y: %f\n", xpos, ypos);
+	}
+
+
+	glm::vec3 current_vec_pos = Window::trackBallMapping(xpos, ypos);
+	glm::vec3 prev_vec_pos = Window::trackBallMapping(x_old, y_old);
+	glm::vec3 mouse_direction = current_vec_pos - prev_vec_pos;
+	float velocity = glm::length(mouse_direction);
+
+	float angle = asin(glm::dot(prev_vec_pos, current_vec_pos) / (glm::length(prev_vec_pos) * glm::length(current_vec_pos)));
+	glm::vec3 rotation_axis = glm::cross(prev_vec_pos, current_vec_pos);
+
+	int left_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	if (left_click_state == GLFW_PRESS)
+	{
+		printf("left click\n");
+		v_objects_to_render[object_number]->rotation(angle, rotation_axis);
 	}
 
 	x_old = xpos;
@@ -273,11 +295,14 @@ glm::vec3 Window::trackBallMapping(double &x_cursor, double &y_cursor)
 	glm::vec3 v;
 	float d;
 
-	v.x = (2.f * x_cursor - width) / width;
-	v.y = (height - 2.f * y_cursor) / height;
-	d = v.length();
+	v.x = ((2.f * x_cursor) - width) / width;
+	v.y = (height - (2.f * y_cursor)) / height;
+	v.z = 0.f;
+	d = glm::length(v);
+	int ass = v.length();
+	printf("d = %f \nass = %f\n", d, ass);
 	d = (d < 1.f) ? d : 1.f;
-	v.z = sqrtf(1.00f - d * d);
+	v.z = sqrtf(1.001f - (d * d));
 	v = glm::normalize(v);
 	return v;
 }

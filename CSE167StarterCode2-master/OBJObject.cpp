@@ -282,11 +282,19 @@ void OBJObject::scale(float scale_factor)
 	toWorld = toWorld * m_center_obj;
 }
 
-// not being used
+
 void OBJObject::rotation(float rotation_angle_deg, glm::vec3 rotation_axis)
 {
-	toWorld = toWorld * glm::rotate(glm::mat4(1.0f), rotation_angle_deg / 180.0f * glm::pi<float>(), rotation_axis);
+	toWorld = toWorld * m_center_obj_inv;
+
+
+	m_rotate = glm::rotate(glm::mat4(1.0f), rotation_angle_deg / 180.0f * glm::pi<float>(), rotation_axis);
+	toWorld = m_rotate * toWorld;
 //	toWorld = glm::rotate(toWorld, rotation_angle_deg / 180.0f * glm::pi<float>(), rotation_axis);
+
+
+	toWorld = toWorld * m_center_obj;
+
 }
 
 void OBJObject::orbit(float rotation_angle_deg, glm::vec3 rotation_axis)
