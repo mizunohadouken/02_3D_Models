@@ -252,36 +252,38 @@ void Window::cursor_position_callback(GLFWwindow * window, double xpos, double y
 {
 	float sensitivity_factor = .05f;
 
-	int right_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-	if (right_click_state == GLFW_PRESS)
+	if ((xpos > 0) && (xpos < width) && (ypos > 0) && (ypos < height))
 	{
-		printf("right click\n");
-		v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f));
-//		v_objects_to_render[object_number]->translation(glm::vec3(vec_pos.x, -vec_pos.y, 0.f));
+		int right_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+		if (right_click_state == GLFW_PRESS)
+		{
+			printf("right click\n");
+			v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f));
+			//		v_objects_to_render[object_number]->translation(glm::vec3(vec_pos.x, -vec_pos.y, 0.f));
 
-	//	glfwGetCursorPos(window, &xpos, &ypos);
-	//	printf("x: %f y: %f\n", xpos, ypos);
+				//	glfwGetCursorPos(window, &xpos, &ypos);
+				//	printf("x: %f y: %f\n", xpos, ypos);
+		}
+
+
+		glm::vec3 current_vec_pos = Window::trackBallMapping(xpos, ypos);
+		glm::vec3 prev_vec_pos = Window::trackBallMapping(x_old, y_old);
+		glm::vec3 mouse_direction = current_vec_pos - prev_vec_pos;
+		float velocity = glm::length(mouse_direction);
+
+		float angle = asin(glm::dot(prev_vec_pos, current_vec_pos) / (glm::length(prev_vec_pos) * glm::length(current_vec_pos)));
+		glm::vec3 rotation_axis = glm::cross(prev_vec_pos, current_vec_pos);
+
+		int left_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (left_click_state == GLFW_PRESS)
+		{
+			printf("left click\n");
+			v_objects_to_render[object_number]->rotation(angle, rotation_axis);
+		}
+
+		x_old = xpos;
+		y_old = ypos;
 	}
-
-
-	glm::vec3 current_vec_pos = Window::trackBallMapping(xpos, ypos);
-	glm::vec3 prev_vec_pos = Window::trackBallMapping(x_old, y_old);
-	glm::vec3 mouse_direction = current_vec_pos - prev_vec_pos;
-	float velocity = glm::length(mouse_direction);
-
-	float angle = asin(glm::dot(prev_vec_pos, current_vec_pos) / (glm::length(prev_vec_pos) * glm::length(current_vec_pos)));
-	glm::vec3 rotation_axis = glm::cross(prev_vec_pos, current_vec_pos);
-
-	int left_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if (left_click_state == GLFW_PRESS)
-	{
-		printf("left click\n");
-		v_objects_to_render[object_number]->rotation(angle, rotation_axis);
-	}
-
-	x_old = xpos;
-	y_old = ypos;
-
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -299,8 +301,6 @@ glm::vec3 Window::trackBallMapping(double &x_cursor, double &y_cursor)
 	v.y = (height - (2.f * y_cursor)) / height;
 	v.z = 0.f;
 	d = glm::length(v);
-	int ass = v.length();
-	printf("d = %f \nass = %f\n", d, ass);
 	d = (d < 1.f) ? d : 1.f;
 	v.z = sqrtf(1.001f - (d * d));
 	v = glm::normalize(v);
