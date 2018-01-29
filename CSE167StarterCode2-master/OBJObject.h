@@ -36,12 +36,18 @@ private:
 */
 
 public:
-	OBJObject(const char* filepath);
+	OBJObject(const char* filepath, glm::vec3 in_ambient, glm::vec3 in_diffuse, glm::vec3 in_specular,	float in_shininess);
 	~OBJObject();
 
 	// shader variables for openGL
-	GLuint VBO, VAO, EBO;
+	GLuint VBO, NBO, VAO, EBO;
 	GLuint uProjection, uModelview;
+
+	// material properties
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	float shininess;
 
 	// methods
 	void draw(GLuint);// shaderProgram);

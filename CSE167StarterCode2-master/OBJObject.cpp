@@ -3,22 +3,24 @@
 
 void OBJObject::draw(GLuint shaderProgram)
 {
+	// calculate model-view matrix
 	glm::mat4 modelview = Window::V * toWorld;
 
+	// link uniform variables from shader
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
 
+	// sent projection and model view matrix to uniform variables in shader
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
 
+	// bind vertex array to begin drawing
 	glBindVertexArray(VAO);
-
+	// draw with triangles using indices to determin order
 	glDrawElements(GL_TRIANGLES, v_indices_norms.size(), GL_UNSIGNED_INT, 0);
 
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
 	glBindVertexArray(0);
-
-
 }
 
 void OBJObject::check_max_min(glm::vec3 &point_to_check, float &out_x_max, float &out_x_min, float &out_y_max, float &out_y_min, float &out_z_max, float &out_z_min)
@@ -31,7 +33,7 @@ void OBJObject::check_max_min(glm::vec3 &point_to_check, float &out_x_max, float
 	if (point_to_check.z < out_z_min) { out_z_min = point_to_check.z; }
 }
 
-OBJObject::OBJObject(const char *filepath) 
+OBJObject::OBJObject(const char *filepath, glm::vec3 in_ambient, glm::vec3 in_diffuse, glm::vec3 in_specular, float in_shininess)
 {
 	toWorld = glm::mat4(1.0f);
 	m_translate = glm::mat4(1.0f);
@@ -44,7 +46,13 @@ OBJObject::OBJObject(const char *filepath)
 	parse(filepath);
 	this->angle = 0.f;
 
+	// set material properties
+	ambient = in_ambient;
+	diffuse = in_diffuse;
+	specular = in_specular;
+	shininess = in_shininess;
 
+	// TODO remove
 	// check OpenGL error
 	GLenum err;
 	while ((err = glGetError()) != GL_NO_ERROR)
@@ -56,25 +64,42 @@ OBJObject::OBJObject(const char *filepath)
 	//end error check!!!!!!!!!!!!!!!!!
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	// open gl stuff
+	// tell open gl to allocate space for arrays and buffers
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
+	// bind vertex array, then buffers associated
 	glBindVertexArray(VAO);
 
+	// bind vbo and send vertices to layout location 0
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-//	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
-	
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	// send vertex atributes to vertex shader
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
-//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	
+	
+	// bind vbo and send normals  to layout location 1
+	glBindBuffer(GL_ARRAY_BUFFER, NBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normals.size(), normals.data(), GL_STATIC_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normals.size(), &normals[0], GL_STATIC_DRAW);
+	// send normal atributes to vertex shader
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+	
 
+	// bind ebo and send indices data
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*v_indices_norms.size(), &v_indices_norms[0], GL_STATIC_DRAW);
-
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*v_indices_norms.size(), &v_indices_norms[0], GL_STATIC_DRAW);
+	
+	
+	// unbind currently bound buffer so no accidental changes
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// unbind VAO so no changes are made
 	glBindVertexArray(0);
 }
 
@@ -92,7 +117,7 @@ void OBJObject::parse(const char *filepath)
 	std::cout << "parsing: " << filepath << "\n";
 
 	FILE* fp;
-	float x, y, z;
+//	float x, y, z;
 	float r, g, b;
 	int char1, char2;
 	char lookahead[256];
