@@ -9,10 +9,20 @@ void OBJObject::draw(GLuint shaderProgram)
 	// link uniform variables from shader
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
+	gl_ambient = glGetUniformLocation(shaderProgram, "ambient");
+	gl_diffuse = glGetUniformLocation(shaderProgram, "diffuse");
+	gl_specular = glGetUniformLocation(shaderProgram, "specular");
+	gl_shininess = glGetUniformLocation(shaderProgram, "shininess");
+
 
 	// sent projection and model view matrix to uniform variables in shader
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+	// send materials to shader
+	glUniform4fv(gl_ambient, 1, glm::value_ptr(ambient));
+	glUniform4fv(gl_diffuse, 1, glm::value_ptr(diffuse));
+	glUniform4fv(gl_specular, 1, glm::value_ptr(specular));
+	glUniform1f(gl_shininess, shininess);
 
 	// bind vertex array to begin drawing
 	glBindVertexArray(VAO);
@@ -33,7 +43,7 @@ void OBJObject::check_max_min(glm::vec3 &point_to_check, float &out_x_max, float
 	if (point_to_check.z < out_z_min) { out_z_min = point_to_check.z; }
 }
 
-OBJObject::OBJObject(const char *filepath, glm::vec3 in_ambient, glm::vec3 in_diffuse, glm::vec3 in_specular, float in_shininess)
+OBJObject::OBJObject(const char *filepath, glm::vec4 in_ambient, glm::vec4 in_diffuse, glm::vec4 in_specular, float in_shininess)
 {
 	toWorld = glm::mat4(1.0f);
 	m_translate = glm::mat4(1.0f);
@@ -51,6 +61,9 @@ OBJObject::OBJObject(const char *filepath, glm::vec3 in_ambient, glm::vec3 in_di
 	diffuse = in_diffuse;
 	specular = in_specular;
 	shininess = in_shininess;
+
+	// send to opengl
+
 
 	// TODO remove
 	// check OpenGL error

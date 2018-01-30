@@ -12,6 +12,10 @@
 #include <GLFW/glfw3.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+//#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <vector>
 
 #include <string>
@@ -36,17 +40,18 @@ private:
 */
 
 public:
-	OBJObject(const char* filepath, glm::vec3 in_ambient, glm::vec3 in_diffuse, glm::vec3 in_specular,	float in_shininess);
+	OBJObject(const char* filepath, glm::vec4 in_ambient, glm::vec4 in_diffuse, glm::vec4 in_specular,	float in_shininess);
 	~OBJObject();
 
 	// shader variables for openGL
 	GLuint VBO, NBO, VAO, EBO;
 	GLuint uProjection, uModelview;
+	GLuint gl_ambient, gl_diffuse, gl_specular, gl_shininess; 
 
 	// material properties
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+	glm::vec4 ambient;
+	glm::vec4 diffuse;
+	glm::vec4 specular;
 	float shininess;
 
 	// methods

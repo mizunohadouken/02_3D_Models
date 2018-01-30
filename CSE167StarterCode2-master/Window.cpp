@@ -16,6 +16,8 @@ const char* window_title = "GLFW Starter Project";
 
 double Window::x_old;
 double Window::y_old;
+GLint Window::phong_off = 0;
+GLuint Window::normal_rendering;
 ///////////////////
 ///////////////////
 
@@ -43,21 +45,21 @@ void Window::initialize_objects()
 //	cube = new Cube();
 
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject> (new OBJObject("objs\\bunny.obj",
-																			glm::vec3(0.f, 0.f, 0.f),
-																			glm::vec3(0.f, 0.f, 0.f),
-																			glm::vec3(.6f, .6f, .5f),
-																			20.f)));
+																			glm::vec4(0.f, 0.f, 0.f, 1.f), // ambient
+																			glm::vec4(0.f, 0.f, 0.f, 1.f), // diffuse
+																			glm::vec4(.6f, .6f, .5f, 1.f), // specular
+																			20.f)));					   // shininess
 #if RENDERALL
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\bear.obj",
-																			glm::vec3(0.f, 0.f, 0.f),
-																			glm::vec3(.7f, .7f, 1.f),
-																			glm::vec3(0.f, 0.f, 0.f),
-																			0.f)));
+																			glm::vec4(0.f, 0.f, 0.f, 1.f), // ambient
+																			glm::vec4(.7f, .7f, 1.f, 1.f), // diffuse
+																			glm::vec4(0.f, 0.f, 0.f, 1.f), // specular
+																			0.f)));						   // shininess
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\dragon.obj",
-																			glm::vec3(0.f, 0.f, 0.f),
-																			glm::vec3(.7f, .7f, 1.f),
-																			glm::vec3(.6f, .6f, .5f),
-																			20.f)));
+																			glm::vec4(0.f, 0.f, 0.f, 1.f), // ambient
+																			glm::vec4(.7f, .7f, 1.f, 1.f), // diffuse
+																			glm::vec4(.6f, .6f, .5f, 1.f), // specular
+																			20.f)));					   // shininess
 #endif
 //	obj_bunny = new OBJObject("objs\\bunny.obj");
 
@@ -228,6 +230,23 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// lower case r resets position
 			else { v_objects_to_render[object_number]->reset_position(); }
 		}
+		// switch between rendering opengl with normals or phong
+		else if (key == GLFW_KEY_N)
+		{
+			normal_rendering = glGetUniformLocation(shaderProgram, "render_with_normals");
+			printf("phong: %d\n", phong_off);
+			if (phong_off == 0)
+			{
+				phong_off = 1;
+				glUniform1i(normal_rendering, phong_off);
+			}
+			else
+			{
+				phong_off = 0;
+				glUniform1i(normal_rendering, phong_off);
+			}
+		}
+
 	}
 }
 

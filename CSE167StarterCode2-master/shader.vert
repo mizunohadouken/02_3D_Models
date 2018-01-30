@@ -13,11 +13,12 @@ layout (location = 1) in vec3 normals;
 uniform mat4 projection;
 uniform mat4 modelview;
 
+
 // Outputs of the vertex shader are the inputs of the same name of the fragment shader.
 // The default output, gl_Position, should be assigned something. You can define as many
 // extra outputs as you need.
 out float sampleExtraOutput;
-out vec3 position_to_send;
+out vec4 position_to_send;
 out vec3 normal_to_send;
 
 void main()
@@ -26,6 +27,6 @@ void main()
     gl_Position = projection * modelview * vec4(position.x, position.y, position.z, 1.0);
     sampleExtraOutput = 1.0f;
 
-	position_to_send = position;
-	normal_to_send = normals;
+	position_to_send = modelview * vec4(position, 1.f);
+	normal_to_send = mat3(transpose(inverse(modelview)))*normals;
 }

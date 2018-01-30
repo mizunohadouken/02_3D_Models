@@ -25,6 +25,8 @@ public:
 	static glm::mat4 V; // V for view
 
 	static double x_old, y_old;
+	static GLint phong_off;
+	static GLuint normal_rendering;
 
 	// methods
 	static void initialize_objects();
