@@ -25,8 +25,13 @@ public:
 	static glm::mat4 V; // V for view
 
 	static double x_old, y_old;
+	// send to switch between phong vs normal coloring
 	static GLint phong_off;
 	static GLuint normal_rendering;
+
+	// send to determine lighting options
+	static GLint light_option; // 0 for all lights, 1 for dir, 2 for point, 3 for spot
+	static GLuint gl_light_option;
 
 	// methods
 	static void initialize_objects();

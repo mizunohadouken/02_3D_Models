@@ -18,6 +18,9 @@ double Window::x_old;
 double Window::y_old;
 GLint Window::phong_off = 0;
 GLuint Window::normal_rendering;
+
+GLint Window::light_option = 0; // default to display all lights
+GLuint Window::gl_light_option;
 ///////////////////
 ///////////////////
 
@@ -45,18 +48,18 @@ void Window::initialize_objects()
 //	cube = new Cube();
 
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject> (new OBJObject("objs\\bunny.obj",
-																			glm::vec4(0.f, 0.f, 0.f, 1.f), // ambient
+																			glm::vec4(0.25f, 0.25f, 0.25f, 1.f), // ambient
 																			glm::vec4(0.f, 0.f, 0.f, 1.f), // diffuse
 																			glm::vec4(.6f, .6f, .5f, 1.f), // specular
 																			20.f)));					   // shininess
 #if RENDERALL
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\bear.obj",
-																			glm::vec4(0.f, 0.f, 0.f, 1.f), // ambient
+																			glm::vec4(0.4f, 0.5f, 0.6f, 1.f), // ambient
 																			glm::vec4(.7f, .7f, 1.f, 1.f), // diffuse
 																			glm::vec4(0.f, 0.f, 0.f, 1.f), // specular
 																			0.f)));						   // shininess
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\dragon.obj",
-																			glm::vec4(0.f, 0.f, 0.f, 1.f), // ambient
+																			glm::vec4(.5f, 0.4f, 0.3f, 1.f), // ambient
 																			glm::vec4(.7f, .7f, 1.f, 1.f), // diffuse
 																			glm::vec4(.6f, .6f, .5f, 1.f), // specular
 																			20.f)));					   // shininess
@@ -245,6 +248,35 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				phong_off = 0;
 				glUniform1i(normal_rendering, phong_off);
 			}
+		}
+		//use keys 0, 1, 2, and 3 to switch between light modes
+		else if (key == GLFW_KEY_0)
+		{
+			light_option = 0;
+			gl_light_option = glGetUniformLocation(shaderProgram, "light_mode");
+			printf("Light mode: %d - All lights on\n", light_option);
+			glUniform1i(gl_light_option, light_option);
+		}
+		else if (key == GLFW_KEY_1)
+		{
+			light_option = 1;
+			gl_light_option = glGetUniformLocation(shaderProgram, "light_mode");
+			printf("Light mode: %d - Directional on\n", light_option);
+			glUniform1i(gl_light_option, light_option);
+		}
+		else if (key == GLFW_KEY_2)
+		{
+			light_option = 2;
+			gl_light_option = glGetUniformLocation(shaderProgram, "light_mode");
+			printf("Light mode: %d - Point on\n", light_option);
+			glUniform1i(gl_light_option, light_option);
+		}
+		else if (key == GLFW_KEY_3)
+		{
+			light_option = 3;
+			gl_light_option = glGetUniformLocation(shaderProgram, "light_mode");
+			printf("Light mode: %d - Spot on\n", light_option);
+			glUniform1i(gl_light_option, light_option);
 		}
 
 	}

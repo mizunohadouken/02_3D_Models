@@ -18,8 +18,8 @@ uniform mat4 modelview;
 // The default output, gl_Position, should be assigned something. You can define as many
 // extra outputs as you need.
 out float sampleExtraOutput;
-out vec4 position_to_send;
-out vec3 normal_to_send;
+out vec4 frag_pos;
+out vec3 frag_normal;
 
 void main()
 {
@@ -27,6 +27,6 @@ void main()
     gl_Position = projection * modelview * vec4(position.x, position.y, position.z, 1.0);
     sampleExtraOutput = 1.0f;
 
-	position_to_send = modelview * vec4(position, 1.f);
-	normal_to_send = mat3(transpose(inverse(modelview)))*normals;
+	frag_pos = modelview * vec4(position, 1.f);
+	frag_normal = normalize(mat3(transpose(inverse(modelview)))*normals);
 }
