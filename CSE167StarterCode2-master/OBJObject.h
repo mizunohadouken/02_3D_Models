@@ -55,7 +55,7 @@ public:
 	float shininess;
 
 	// methods
-	void draw(GLuint);// shaderProgram);
+	void draw(GLuint shaderProgram);// shaderProgram);
 	void check_max_min(glm::vec3 & point_to_check, float & out_x_max, float & out_x_min, float & out_y_max, float & out_y_min, float & out_z_max, float & out_z_min);
 
 	void parse(const char* filepath);

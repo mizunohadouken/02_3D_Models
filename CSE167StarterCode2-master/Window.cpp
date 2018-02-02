@@ -21,6 +21,20 @@ GLuint Window::normal_rendering;
 
 GLint Window::light_option = 0; // default to display all lights
 GLuint Window::gl_light_option;
+
+// intialize lights
+glm::vec4 d_dir = glm::vec4(1.0f, 0.f, 0.f, 0.f);
+glm::vec4 d_col = glm::vec4(1.f, 1.f, 1.f, 1.f);
+glm::vec4 p_pos = glm::vec4(1.0f, 0.41f, 0.7f, 1.f);
+glm::vec4 p_col = glm::vec4(1.0f, 0.41f, 0.4f, 1.f);
+glm::vec4 sp_pos = glm::vec4(1.0f, 0.41f, 0.9f, 1.f);
+glm::vec4 sp_dir = glm::vec4(1.0f, 0.41f, 0.1f, 0.f);
+glm::vec4 sp_col = glm::vec4(1.0f, 0.f, 0.f, 1.f);
+float cone_angle = 0.41f;
+float taper = 0.7f;
+light lights_to_send = light(d_dir, d_col,
+							p_pos, p_col,
+							sp_pos, sp_dir, sp_col, cone_angle, taper);
 ///////////////////
 ///////////////////
 
@@ -34,6 +48,11 @@ GLint shaderProgram;
 glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
+// send camera pos to opengl
+GLuint Window::gl_eye_position;
+
+
+
 
 int Window::width;
 int Window::height;
@@ -49,9 +68,9 @@ void Window::initialize_objects()
 
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject> (new OBJObject("objs\\bunny.obj",
 																			glm::vec4(0.25f, 0.25f, 0.25f, 1.f), // ambient
-																			glm::vec4(0.f, 0.f, 0.f, 1.f), // diffuse
-																			glm::vec4(.6f, .6f, .5f, 1.f), // specular
-																			20.f)));					   // shininess
+																			glm::vec4(0.4f, 0.4f, 0.4f, 1.f), // diffuse
+																			glm::vec4(.774597f, .774597f, .774597f, 1.f), // specular
+																			128.f*.6f)));					   // shininess
 #if RENDERALL
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\bear.obj",
 																			glm::vec4(0.4f, 0.5f, 0.6f, 1.f), // ambient
@@ -59,9 +78,9 @@ void Window::initialize_objects()
 																			glm::vec4(0.f, 0.f, 0.f, 1.f), // specular
 																			0.f)));						   // shininess
 	v_objects_to_render.push_back(std::unique_ptr<OBJObject>(new OBJObject("objs\\dragon.obj",
-																			glm::vec4(.5f, 0.4f, 0.3f, 1.f), // ambient
-																			glm::vec4(.7f, .7f, 1.f, 1.f), // diffuse
-																			glm::vec4(.6f, .6f, .5f, 1.f), // specular
+																			glm::vec4(.1745f, 0.01175f, 0.01175f, 1.f), // ambient
+																			glm::vec4(.61424f, .04136f, .04136f, 1.f), // diffuse
+																			glm::vec4(.727811f, .626959f, .626959f, 1.f), // specular
 																			20.f)));					   // shininess
 #endif
 //	obj_bunny = new OBJObject("objs\\bunny.obj");
@@ -159,12 +178,15 @@ void Window::display_callback(GLFWwindow* window)
 	// Use the shader of programID
 	glUseProgram(shaderProgram);
 	
-	// TODO remove cube
-	// Render the cube
-//	cube->draw(shaderProgram);
+	// send eye
+	gl_eye_position = glGetUniformLocation(shaderProgram, "eye_position");
+	glUniform3fv(gl_eye_position, 1, glm::value_ptr(cam_pos));
 
-	// TODO render objs
-//	obj_bunny->draw(shaderProgram);
+	// send lights
+	// TODO TRANSFORM LIGHTS W MODEL-VIEW MATRIX
+	lights_to_send.send_gl_lights(shaderProgram);
+
+	// render objs
 	v_objects_to_render[object_number]->draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing

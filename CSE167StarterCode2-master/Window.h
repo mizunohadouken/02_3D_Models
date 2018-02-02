@@ -11,6 +11,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "Cube.h"
+#include "Lights.h"
 #include "shader.h"
 
 #include "OBJObject.h"
@@ -32,6 +33,9 @@ public:
 	// send to determine lighting options
 	static GLint light_option; // 0 for all lights, 1 for dir, 2 for point, 3 for spot
 	static GLuint gl_light_option;
+
+	// to send camera position
+	static GLuint gl_eye_position;
 
 	// methods
 	static void initialize_objects();
