@@ -54,14 +54,60 @@ vec4 calc_dir_contribution(vec3 vertex_norm, vec3 to_eye)
 		vec3 no_hom_light_dir = vec3(dir_light.direction.xyz);
 		vec3 to_light = normalize(-no_hom_light_dir);
 		
-	    float nDotL = dot(vertex_norm, to_light)  ;         
+	    float nDotL = dot(vertex_norm, to_light);         
         vec4 lambert = diffuse * dir_light.color * max (nDotL, 0.0);  
 		
 		vec3 relfective = reflect(-to_light, vertex_norm);
 		float reflectiveDotEyeDir = dot(relfective, to_eye);
 		vec4 phong = specular * dir_light.color * pow(max(reflectiveDotEyeDir, 0.0), shininess);
 		
-		return (lambert + phong); // TODO change
+		return (lambert + phong); 
+}
+
+vec4 calc_point_contribution(vec3 vertex_norm, vec3 to_eye, vec3 dehom_frag_pos)
+{
+		vec3 dehom_light_pos = p_light.position.xyz/ p_light.position.w;
+		vec3 to_light = normalize(dehom_light_pos - dehom_frag_pos);
+		
+		float distance = length(dehom_light_pos - dehom_frag_pos);
+		vec4 attenuated_color = p_light.color;// / distance; // linear attenuation
+		
+	    float nDotL = dot(vertex_norm, to_light);         
+        vec4 lambert = diffuse *  attenuated_color * max (nDotL, 0.0);  
+		
+		vec3 relfective = reflect(-to_light, vertex_norm);
+		float reflectiveDotEyeDir = dot(relfective, to_eye);
+		vec4 phong = specular *  attenuated_color * pow(max(reflectiveDotEyeDir, 0.0), shininess);
+		
+		return (lambert + phong); 
+}
+
+vec4 calc_spot_contribution(vec3 vertex_norm, vec3 to_eye, vec3 dehom_frag_pos)
+{	
+	vec3 dehom_light_pos = sp_light.position.xyz/  sp_light.position.w;
+	vec3 to_light = normalize(dehom_light_pos - dehom_frag_pos);
+
+	float negLdotD = dot(-to_light, sp_light.direction.xyz);
+	vec4 attenuated_color;
+	if (degrees(acos(negLdotD)) > sp_light.cut_off_angle)
+	{
+		attenuated_color = vec4(0.f);
+	}
+	else
+	{
+		float distance = length(dehom_light_pos - dehom_frag_pos);
+		vec4 spot_color = sp_light.color * pow(negLdotD, sp_light.exponent);
+		attenuated_color = spot_color;// / pow(distance, 2.f); // quadratic attenuation
+	}
+	
+	float nDotL = dot(vertex_norm, to_light);
+	vec4 lambert = diffuse * attenuated_color * max (nDotL, 0.0);
+	
+	vec3 reflective = reflect(-to_light, vertex_norm);
+	float reflectiveDotEyeDir = dot(reflective, to_eye);
+	vec4 phong = specular * attenuated_color * pow(max(reflectiveDotEyeDir, 0.0), shininess);
+		
+	return (lambert + phong);
 }
 
 void main()
@@ -84,15 +130,19 @@ void main()
 	}
 	else // use phong model
 	{
-//	    float nDotL = dot(normal, direction)  ;         
-//        vec4 lambert = diffuse * lightcolor * max (nDotL, 0.0);  
-		
 //		color = vec4(.0f, 0.0f, 0.5f, 1.f);
 //		color = sp_light.color;
+//		 color = vec4(0.4f, 0.5f, 0.6f, 1.f);
 
-// color = vec4(0.4f, 0.5f, 0.6f, 1.f);
+		if (light_mode == 1 || light_mode == 0)
+		{dir_col_contrib = calc_dir_contribution(norm, to_eye);}
 
-		dir_col_contrib = calc_dir_contribution(norm, to_eye);
-		color = ambient + dir_col_contrib + p_col_contrib + spot_col_contrib;
+		if (light_mode == 2 || light_mode == 0)
+		{p_col_contrib = calc_point_contribution(norm, to_eye, dehom_frag_pos);}
+	
+		if (light_mode == 3 || light_mode == 0)
+		{spot_col_contrib = calc_spot_contribution(norm, to_eye, dehom_frag_pos);}
+	
+		color = ambient + dir_col_contrib ;//+ p_col_contrib;// + spot_col_contrib;
 	}
 }
