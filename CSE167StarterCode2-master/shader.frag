@@ -143,6 +143,6 @@ void main()
 		if (light_mode == 3 || light_mode == 0)
 		{spot_col_contrib = calc_spot_contribution(norm, to_eye, dehom_frag_pos);}
 	
-		color = ambient + dir_col_contrib ;//+ p_col_contrib;// + spot_col_contrib;
+		color = ambient + p_col_contrib + dir_col_contrib + spot_col_contrib; 
 	}
 }

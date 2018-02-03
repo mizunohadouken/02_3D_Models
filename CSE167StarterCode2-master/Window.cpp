@@ -23,17 +23,17 @@ GLint Window::light_option = 0; // default to display all lights
 GLuint Window::gl_light_option;
 
 // intialize lights
-glm::vec4 d_dir = glm::vec4(5.0f, 0.f, 0.f, 0.f);
+glm::vec4 d_dir = glm::vec4(0.0f, -1.f, 0.f, 0.f);
 glm::vec4 d_col = glm::vec4(0.f, 1.f, 0.f, 1.f);
 
-glm::vec4 p_pos = glm::vec4(0.f, 0.f, 5.f, 1.f);
-glm::vec4 p_col = glm::vec4(1.f, 1.f, 1.f, 1.f);
+glm::vec4 p_pos = glm::vec4(0.f, 5.f, 0.f, 1.f);
+glm::vec4 p_col = glm::vec4(0.f, 0.f, 1.f, 1.f);
 
-glm::vec4 sp_pos = glm::vec4(0.f, 0.f, 5.f, 1.f);
-glm::vec4 sp_dir = glm::vec4(0.f, 0.f, -5.f, 0.f);
-glm::vec4 sp_col = glm::vec4(1.f, 1.f, 1.f, 1.f);
-float cone_angle = .0f;
-float taper = .5f;
+glm::vec4 sp_pos = glm::vec4(0.f, 0.f, 20.f, 1.f);
+glm::vec4 sp_dir = glm::vec4(0.f, 0.f, -1.f, 0.f);
+glm::vec4 sp_col = glm::vec4(1.f, 0.f, 0.f, 1.f);
+float cone_angle = 15.0f; // degrees
+float taper = 15.f;
 light lights_to_send = light(d_dir, d_col,
 							p_pos, p_col,
 							sp_pos, sp_dir, sp_col, cone_angle, taper);
@@ -276,18 +276,18 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		}
 
 		// change cutoff angle
-		else if (key == GLFW_KEY_C)
+		else if (light_option == 3 && key == GLFW_KEY_W)
 		{
 			// upper case C increases
 			if (mods == GLFW_MOD_SHIFT)
 			{
-				lights_to_send.transform_cone_angle(10.f);
+				lights_to_send.transform_cone_angle(2.f);
 				printf("cone: %f\n", lights_to_send.sp_light.cut_off_angle);
 			}
 			// lower case c reduces
 			else
 			{
-				lights_to_send.transform_cone_angle(-10.f);
+				lights_to_send.transform_cone_angle(-2.f);
 				printf("cone: %f\n", lights_to_send.sp_light.cut_off_angle);
 			}
 		}
