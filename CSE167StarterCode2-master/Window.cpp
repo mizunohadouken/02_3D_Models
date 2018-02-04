@@ -26,12 +26,12 @@ GLuint Window::gl_light_option;
 glm::vec4 d_dir = glm::vec4(0.0f, -1.f, 0.f, 0.f);
 glm::vec4 d_col = glm::vec4(0.f, 1.f, 0.f, 1.f);
 
-glm::vec4 p_pos = glm::vec4(0.f, 5.f, 0.f, 1.f);
+glm::vec4 p_pos = glm::vec4(0.f, 0.f, 4.f, 1.f);
 glm::vec4 p_col = glm::vec4(1.f, 1.f, 1.f, 1.f);
 
-glm::vec4 sp_pos = glm::vec4(0.f, 0.f, 20.f, 1.f);
+glm::vec4 sp_pos = glm::vec4(0.f, 0.f, 5.f, 1.f);
 glm::vec4 sp_dir = glm::vec4(0.f, 0.f, -1.f, 0.f);
-glm::vec4 sp_col = glm::vec4(1.f, 0.f, 0.f, 1.f);
+glm::vec4 sp_col = glm::vec4(1.f, 1.f, 1.f, 1.f);
 float cone_angle = 15.0f; // degrees
 float taper = 15.f;
 light lights_to_send = light(d_dir, d_col,
@@ -298,13 +298,13 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// upper case E increases
 			if (mods == GLFW_MOD_SHIFT)
 			{
-				lights_to_send.change_edge_exponent(1.25f);
+				lights_to_send.change_edge_exponent(1.5f);
 				printf("exponent: %f\n", lights_to_send.sp_light.exponent);
 			}
 			// lower case e reduces
 			else
 			{
-				lights_to_send.change_edge_exponent(.75f);
+				lights_to_send.change_edge_exponent(.5f);
 				printf("exponent: %f\n", lights_to_send.sp_light.exponent);
 			}
 		}
@@ -398,7 +398,8 @@ void Window::cursor_position_callback(GLFWwindow * window, double xpos, double y
 			if (right_click_state == GLFW_PRESS) { v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f)); }
 			if (left_click_state == GLFW_PRESS) { v_objects_to_render[object_number]->rotation(angle, rotation_axis); }
 		}
-		else if (light_option == 1)
+
+		else if (light_option == 1 || light_option == 2 || light_option == 3)
 		{
 			if (left_click_state == GLFW_PRESS)
 			{
@@ -406,14 +407,7 @@ void Window::cursor_position_callback(GLFWwindow * window, double xpos, double y
 				lights_to_send.rotate_light(light_option, angle, rotation_axis);
 			}
 		}
-		else if (light_option == 2)
-		{
-			if (left_click_state == GLFW_PRESS)
-			{
-				printf("left click, rotate point light\n");
-				lights_to_send.rotate_light(light_option, angle, rotation_axis);
-			}
-		}
+
 		x_old = xpos;
 		y_old = ypos;
 	}
@@ -427,7 +421,9 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 		// translate along z axis when using mouse scroll
 		v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.f, yoffset));
 	}
-
+	if (light_option == 2 || light_option == 3)
+	printf("yoffset: %f\n", yoffset);
+	lights_to_send.scale_light(light_option, yoffset);
 
 }
 

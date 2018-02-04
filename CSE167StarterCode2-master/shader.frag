@@ -70,7 +70,7 @@ vec4 calc_point_contribution(vec3 vertex_norm, vec3 to_eye, vec3 dehom_frag_pos)
 		vec3 to_light = normalize(dehom_light_pos - dehom_frag_pos);
 		
 		float distance = length(dehom_light_pos - dehom_frag_pos);
-		vec4 attenuated_color = p_light.color;// / distance; // linear attenuation
+		vec4 attenuated_color = p_light.color; // / distance; // linear attenuation
 		
 	    float nDotL = dot(vertex_norm, to_light);         
         vec4 lambert = diffuse *  attenuated_color * max (nDotL, 0.0);  
