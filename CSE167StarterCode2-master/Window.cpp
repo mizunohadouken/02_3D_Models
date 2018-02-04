@@ -27,7 +27,7 @@ glm::vec4 d_dir = glm::vec4(0.0f, -1.f, 0.f, 0.f);
 glm::vec4 d_col = glm::vec4(0.f, 1.f, 0.f, 1.f);
 
 glm::vec4 p_pos = glm::vec4(0.f, 5.f, 0.f, 1.f);
-glm::vec4 p_col = glm::vec4(0.f, 0.f, 1.f, 1.f);
+glm::vec4 p_col = glm::vec4(1.f, 1.f, 1.f, 1.f);
 
 glm::vec4 sp_pos = glm::vec4(0.f, 0.f, 20.f, 1.f);
 glm::vec4 sp_dir = glm::vec4(0.f, 0.f, -1.f, 0.f);
@@ -214,7 +214,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		else if (key == GLFW_KEY_F1) { object_number = 0; }
 		else if (key == GLFW_KEY_F2) { object_number = 1; }
 		else if (key == GLFW_KEY_F3) { object_number = 2; }
-		
+
 		// translate along x axis
 		else if (key == GLFW_KEY_X)
 		{
@@ -274,23 +274,43 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				glUniform1i(normal_rendering, phong_off);
 			}
 		}
-
+		////////////////
+		// spot light controls
 		// change cutoff angle
 		else if (light_option == 3 && key == GLFW_KEY_W)
 		{
-			// upper case C increases
+			// upper case W increases
 			if (mods == GLFW_MOD_SHIFT)
 			{
 				lights_to_send.transform_cone_angle(2.f);
 				printf("cone: %f\n", lights_to_send.sp_light.cut_off_angle);
 			}
-			// lower case c reduces
+			// lower case w reduces
 			else
 			{
 				lights_to_send.transform_cone_angle(-2.f);
 				printf("cone: %f\n", lights_to_send.sp_light.cut_off_angle);
 			}
 		}
+		// change edge sharpness
+		else if (light_option == 3 && key == GLFW_KEY_E)
+		{
+			// upper case E increases
+			if (mods == GLFW_MOD_SHIFT)
+			{
+				lights_to_send.change_edge_exponent(1.25f);
+				printf("exponent: %f\n", lights_to_send.sp_light.exponent);
+			}
+			// lower case e reduces
+			else
+			{
+				lights_to_send.change_edge_exponent(.75f);
+				printf("exponent: %f\n", lights_to_send.sp_light.exponent);
+			}
+		}
+		//end spot light controls
+		//////////////////
+	
 
 		//use keys 0, 1, 2, and 3 to switch between light modes
 		else if (key == GLFW_KEY_0)
@@ -358,22 +378,42 @@ void Window::cursor_position_callback(GLFWwindow * window, double xpos, double y
 {
 	float sensitivity_factor = .05f;
 
+	// get state of mouse clicks
+	int right_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+	int left_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+
+	// calculate mouse variables in  world space
+	glm::vec3 current_vec_pos = Window::trackBallMapping(xpos, ypos);
+	glm::vec3 prev_vec_pos = Window::trackBallMapping(x_old, y_old);
+	glm::vec3 mouse_direction = current_vec_pos - prev_vec_pos;
+	float velocity = glm::length(mouse_direction);
+	float angle = asin(glm::dot(prev_vec_pos, current_vec_pos) / (glm::length(prev_vec_pos) * glm::length(current_vec_pos)));
+	glm::vec3 rotation_axis = glm::cross(prev_vec_pos, current_vec_pos);
+
 	if ((xpos > 0) && (xpos < width) && (ypos > 0) && (ypos < height))
 	{
-		int right_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-		if (right_click_state == GLFW_PRESS){v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f));}
-
-		glm::vec3 current_vec_pos = Window::trackBallMapping(xpos, ypos);
-		glm::vec3 prev_vec_pos = Window::trackBallMapping(x_old, y_old);
-		glm::vec3 mouse_direction = current_vec_pos - prev_vec_pos;
-		float velocity = glm::length(mouse_direction);
-
-		float angle = asin(glm::dot(prev_vec_pos, current_vec_pos) / (glm::length(prev_vec_pos) * glm::length(current_vec_pos)));
-		glm::vec3 rotation_axis = glm::cross(prev_vec_pos, current_vec_pos);
-
-		int left_click_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-		if (left_click_state == GLFW_PRESS)	{v_objects_to_render[object_number]->rotation(angle, rotation_axis);}
-
+		// only allow movement of model when all lights are on
+		if (light_option == 0)
+		{
+			if (right_click_state == GLFW_PRESS) { v_objects_to_render[object_number]->translation(sensitivity_factor * glm::vec3(xpos - x_old, y_old - ypos, 0.f)); }
+			if (left_click_state == GLFW_PRESS) { v_objects_to_render[object_number]->rotation(angle, rotation_axis); }
+		}
+		else if (light_option == 1)
+		{
+			if (left_click_state == GLFW_PRESS)
+			{
+				printf("left click, rotate dir light\n");
+				lights_to_send.rotate_light(light_option, angle, rotation_axis);
+			}
+		}
+		else if (light_option == 2)
+		{
+			if (left_click_state == GLFW_PRESS)
+			{
+				printf("left click, rotate point light\n");
+				lights_to_send.rotate_light(light_option, angle, rotation_axis);
+			}
+		}
 		x_old = xpos;
 		y_old = ypos;
 	}
@@ -381,8 +421,14 @@ void Window::cursor_position_callback(GLFWwindow * window, double xpos, double y
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	// translate along z axis when using mouse scroll
-	v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.f, yoffset));
+	// only allow movement of model when all lights are on
+	if (light_option == 0)
+	{
+		// translate along z axis when using mouse scroll
+		v_objects_to_render[object_number]->translation(glm::vec3(0.f, 0.f, yoffset));
+	}
+
+
 }
 
 glm::vec3 Window::trackBallMapping(double &x_cursor, double &y_cursor)

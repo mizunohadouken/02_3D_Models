@@ -327,7 +327,8 @@ void OBJObject::rotation(float rotation_angle_deg, glm::vec3 rotation_axis)
 
 
 	m_rotate = glm::rotate(glm::mat4(1.0f), rotation_angle_deg / 180.0f * glm::pi<float>(), rotation_axis);
-	toWorld = toWorld * m_rotate;
+	toWorld = toWorld * m_rotate; // local rotation
+//	toWorld = m_rotate * toWorld; // orbit rotation
 //	toWorld = glm::rotate(toWorld, rotation_angle_deg / 180.0f * glm::pi<float>(), rotation_axis);
 
 

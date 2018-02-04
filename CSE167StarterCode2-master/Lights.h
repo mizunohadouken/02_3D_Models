@@ -51,12 +51,15 @@ public:
 	void send_gl_lights(GLuint shaderProgram);
 
 	void transform_cone_angle(float scale);
+	void change_edge_exponent(float scale);
+	void rotate_light(int &light_num, float rot_angle_deg, glm::vec3 rotation_axis);
 
 	// variables
 	directional_light dir_light;
 	point_light p_light;
 	spot_light sp_light;
-	glm::mat4 light_to_world;
+	glm::mat4 d_light_to_world, p_light_to_world, sp_light_to_world;	
+	glm::mat4 d_light_rotation, p_light_rotation, sp_light_rotation;
 	// opengl varibles
 	GLuint gl_d_dir, gl_d_col, gl_p_pos, gl_p_col, gl_sp_pos, gl_sp_dir, gl_sp_col, gl_cone_angle, gl_taper;
 
